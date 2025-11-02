@@ -32,30 +32,35 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ### Docker Deployment
 
-#### Build and run with Docker Compose (Recommended)
+This project is configured for deployment with **Dokploy**.
 
-```bash
-# Build and start the container
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop the container
-docker-compose down
-```
-
-#### Build and run with Docker directly
+#### Build and run with Docker
 
 ```bash
 # Build the image
 docker build -t daraja .
 
-# Run the container
-docker run -p 3000:3000 daraja
+# Run the container (port 5000 external, 3000 internal)
+docker run -d -p 5000:3000 --name daraja daraja
+
+# View logs
+docker logs -f daraja
+
+# Stop the container
+docker stop daraja && docker rm daraja
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+The application will be available at [http://localhost:5000](http://localhost:5000).
+
+#### Using Makefile
+
+```bash
+make build    # Build the Docker image
+make up       # Start the container
+make logs     # View logs
+make down     # Stop the container
+make clean    # Remove container and image
+```
 
 ## Tailwind Configuration
 

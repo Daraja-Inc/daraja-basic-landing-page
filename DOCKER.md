@@ -3,67 +3,30 @@
 ## 📋 Prérequis
 
 - Docker (version 20.10+)
-- Docker Compose (version 2.0+)
 
 ## 🚀 Démarrage rapide
 
-### Avec Docker Compose (Recommandé)
+### Déploiement avec Dokploy
 
-```bash
-# Construire et démarrer
-docker-compose up -d
+Le projet est configuré pour être déployé avec Dokploy. Le Dockerfile gère toute la configuration nécessaire.
 
-# L'application sera disponible sur http://localhost:3000
-```
+**Configuration des ports :**
+- Port externe : 5000
+- Port interne : 3000
 
-### Avec Docker uniquement
+### Avec Docker
 
 ```bash
 # Construire l'image
 docker build -t daraja .
 
-# Lancer le conteneur
-docker run -p 3000:3000 daraja
+# Lancer le conteneur (port 5000 externe -> 3000 interne)
+docker run -p 5000:3000 daraja
+
+# L'application sera disponible sur http://localhost:5000
 ```
 
 ## 🛠️ Commandes utiles
-
-### Avec Makefile
-
-```bash
-make help        # Afficher toutes les commandes disponibles
-make build       # Construire l'image Docker
-make up          # Démarrer les conteneurs
-make down        # Arrêter les conteneurs
-make logs        # Afficher les logs en temps réel
-make restart     # Redémarrer les conteneurs
-make clean       # Nettoyer complètement (conteneurs, images, volumes)
-```
-
-### Avec Docker Compose
-
-```bash
-# Construire l'image
-docker-compose build
-
-# Démarrer en mode détaché
-docker-compose up -d
-
-# Démarrer avec logs visibles
-docker-compose up
-
-# Arrêter les conteneurs
-docker-compose down
-
-# Voir les logs
-docker-compose logs -f
-
-# Redémarrer un service
-docker-compose restart daraja-app
-
-# Voir l'état des conteneurs
-docker-compose ps
-```
 
 ### Avec Docker
 
@@ -112,24 +75,17 @@ Le Dockerfile utilise une approche multi-stage pour optimiser la taille de l'ima
 
 ### Variables d'environnement
 
-Copiez `.env.example` vers `.env` et ajustez les valeurs :
-
-```bash
-cp .env.example .env
-```
-
 Variables disponibles :
 - `NODE_ENV` : Environnement (production/development)
-- `PORT` : Port d'écoute (défaut: 3000)
-- `HOSTNAME` : Hostname (défaut: 0.0.0.0)
+- `PORT` : Port d'écoute interne (3000)
+- `HOSTNAME` : Hostname (0.0.0.0)
 - `NEXT_TELEMETRY_DISABLED` : Désactiver la télémétrie Next.js
 
 ### Changer le port
 
-Dans `docker-compose.yml` :
-```yaml
-ports:
-  - "8080:3000"  # Port hôte:Port conteneur
+Pour modifier le port externe, utilisez la commande `docker run` :
+```bash
+docker run -p 8080:3000 daraja  # Port externe:Port interne
 ```
 
 ## 🐛 Dépannage
@@ -138,19 +94,23 @@ ports:
 
 ```bash
 # Vérifier les logs
-docker-compose logs daraja-app
+docker logs daraja
 
 # Vérifier l'état
-docker-compose ps
+docker ps
 ```
 
 ### Reconstruire complètement
 
 ```bash
-# Supprimer et reconstruire
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+# Arrêter et supprimer le conteneur
+docker stop daraja && docker rm daraja
+
+# Reconstruire sans cache
+docker build --no-cache -t daraja .
+
+# Relancer
+docker run -p 5000:3000 daraja
 ```
 
 ### Problème de permissions
@@ -172,16 +132,20 @@ docker system prune -a --volumes
 
 ## 📦 Déploiement en production
 
-### Sur un serveur
+### Avec Dokploy
 
-1. Cloner le repository
-2. Construire l'image
-3. Lancer avec docker-compose
+Le projet est optimisé pour Dokploy. Il suffit de :
+1. Connecter votre repository GitHub à Dokploy
+2. Dokploy détectera automatiquement le Dockerfile
+3. Configurer le port externe sur 5000 (le port interne 3000 est déjà configuré)
+
+### Sur un serveur
 
 ```bash
 git clone <repository-url>
-cd daraja
-docker-compose up -d
+cd daraja-basic-landing-page
+docker build -t daraja .
+docker run -d -p 5000:3000 --name daraja daraja
 ```
 
 ### Avec un reverse proxy (Nginx)
@@ -194,7 +158,7 @@ server {
     server_name votre-domaine.com;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -224,10 +188,14 @@ server {
 # Pull les dernières modifications
 git pull
 
-# Reconstruire et relancer
-docker-compose down
-docker-compose build
-docker-compose up -d
+# Arrêter le conteneur actuel
+docker stop daraja && docker rm daraja
+
+# Reconstruire l'image
+docker build -t daraja .
+
+# Relancer
+docker run -d -p 5000:3000 --name daraja daraja
 ```
 
 ## 📝 Notes

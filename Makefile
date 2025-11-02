@@ -5,22 +5,24 @@ help: ## Afficher l'aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 build: ## Construire l'image Docker
-	docker-compose build
+	docker build -t daraja .
 
-up: ## Démarrer les conteneurs
-	docker-compose up -d
+up: ## Démarrer le conteneur (port 5000:3000)
+	docker run -d -p 5000:3000 --name daraja daraja
 
-down: ## Arrêter les conteneurs
-	docker-compose down
+down: ## Arrêter et supprimer le conteneur
+	docker stop daraja || true
+	docker rm daraja || true
 
 logs: ## Afficher les logs
-	docker-compose logs -f
+	docker logs -f daraja
 
-restart: ## Redémarrer les conteneurs
-	docker-compose restart
+restart: ## Redémarrer le conteneur
+	docker restart daraja
 
-clean: ## Supprimer les conteneurs, images et volumes
-	docker-compose down -v
+clean: ## Supprimer le conteneur et l'image
+	docker stop daraja || true
+	docker rm daraja || true
 	docker rmi daraja || true
 
 dev: ## Démarrer en mode développement local
