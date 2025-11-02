@@ -3,30 +3,75 @@
 ## 📋 Prérequis
 
 - Docker (version 20.10+)
+- Docker Compose (version 2.0+)
 
 ## 🚀 Démarrage rapide
 
 ### Déploiement avec Dokploy
 
-Le projet est configuré pour être déployé avec Dokploy. Le Dockerfile gère toute la configuration nécessaire.
+Le projet est configuré pour être déployé avec Dokploy en utilisant Docker Compose.
 
 **Configuration des ports :**
 - Port externe : 5000
 - Port interne : 3000
 
-### Avec Docker
+### Avec Docker Compose (Recommandé)
+
+```bash
+# Construire et démarrer
+docker-compose up -d
+
+# L'application sera disponible sur http://localhost:5000
+```
+
+### Avec Docker uniquement
 
 ```bash
 # Construire l'image
 docker build -t daraja .
 
-# Lancer le conteneur (port 5000 externe -> 3000 interne)
+# Lancer le conteneur
 docker run -p 5000:3000 daraja
-
-# L'application sera disponible sur http://localhost:5000
 ```
 
 ## 🛠️ Commandes utiles
+
+### Avec Makefile
+
+```bash
+make help        # Afficher toutes les commandes disponibles
+make build       # Construire l'image Docker
+make up          # Démarrer les conteneurs
+make down        # Arrêter les conteneurs
+make logs        # Afficher les logs en temps réel
+make restart     # Redémarrer les conteneurs
+make clean       # Nettoyer complètement (conteneurs, images, volumes)
+```
+
+### Avec Docker Compose
+
+```bash
+# Construire l'image
+docker-compose build
+
+# Démarrer en mode détaché
+docker-compose up -d
+
+# Démarrer avec logs visibles
+docker-compose up
+
+# Arrêter les conteneurs
+docker-compose down
+
+# Voir les logs
+docker-compose logs -f
+
+# Redémarrer un service
+docker-compose restart daraja-app
+
+# Voir l'état des conteneurs
+docker-compose ps
+```
 
 ### Avec Docker
 
@@ -75,6 +120,12 @@ Le Dockerfile utilise une approche multi-stage pour optimiser la taille de l'ima
 
 ### Variables d'environnement
 
+Copiez `.env.example` vers `.env` et ajustez les valeurs si nécessaire :
+
+```bash
+cp .env.example .env
+```
+
 Variables disponibles :
 - `NODE_ENV` : Environnement (production/development)
 - `PORT` : Port d'écoute interne (3000)
@@ -83,9 +134,10 @@ Variables disponibles :
 
 ### Changer le port
 
-Pour modifier le port externe, utilisez la commande `docker run` :
-```bash
-docker run -p 8080:3000 daraja  # Port externe:Port interne
+Dans `docker-compose.yml` :
+```yaml
+ports:
+  - "8080:3000"  # Port externe:Port interne
 ```
 
 ## 🐛 Dépannage
@@ -94,23 +146,19 @@ docker run -p 8080:3000 daraja  # Port externe:Port interne
 
 ```bash
 # Vérifier les logs
-docker logs daraja
+docker-compose logs daraja-app
 
 # Vérifier l'état
-docker ps
+docker-compose ps
 ```
 
 ### Reconstruire complètement
 
 ```bash
-# Arrêter et supprimer le conteneur
-docker stop daraja && docker rm daraja
-
-# Reconstruire sans cache
-docker build --no-cache -t daraja .
-
-# Relancer
-docker run -p 5000:3000 daraja
+# Supprimer et reconstruire
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
 ### Problème de permissions
@@ -136,16 +184,19 @@ docker system prune -a --volumes
 
 Le projet est optimisé pour Dokploy. Il suffit de :
 1. Connecter votre repository GitHub à Dokploy
-2. Dokploy détectera automatiquement le Dockerfile
-3. Configurer le port externe sur 5000 (le port interne 3000 est déjà configuré)
+2. Dokploy détectera automatiquement le docker-compose.yml
+3. Le port externe 5000 est déjà configuré (mappé vers le port interne 3000)
 
 ### Sur un serveur
+
+1. Cloner le repository
+2. Construire l'image
+3. Lancer avec docker-compose
 
 ```bash
 git clone <repository-url>
 cd daraja-basic-landing-page
-docker build -t daraja .
-docker run -d -p 5000:3000 --name daraja daraja
+docker-compose up -d
 ```
 
 ### Avec un reverse proxy (Nginx)
@@ -188,14 +239,10 @@ server {
 # Pull les dernières modifications
 git pull
 
-# Arrêter le conteneur actuel
-docker stop daraja && docker rm daraja
-
-# Reconstruire l'image
-docker build -t daraja .
-
-# Relancer
-docker run -d -p 5000:3000 --name daraja daraja
+# Reconstruire et relancer
+docker-compose down
+docker-compose build
+docker-compose up -d
 ```
 
 ## 📝 Notes
