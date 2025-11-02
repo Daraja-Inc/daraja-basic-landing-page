@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   daraja-app:
-    container_name: daraja
+    container_name: daraja-basic-landing-page
     build:
       context: .
       dockerfile: Dockerfile
